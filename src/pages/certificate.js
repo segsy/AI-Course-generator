@@ -40,7 +40,7 @@ const Certificate = () => {
             navigate("/create");
         }
 
-    }, []);
+    }, [courseTitle, navigate]);
 
     const showToast = async (msg) => {
         setProcessing(false);

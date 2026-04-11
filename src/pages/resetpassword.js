@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import img from '../../src/res/img/reset.svg';
 import { Flowbite, Navbar } from 'flowbite-react';
 import { Button, Label } from 'flowbite-react';
@@ -24,9 +24,9 @@ const ResetPassword = () => {
         navigate("/signin");
     }
 
-    function redirectHome() {
+    const redirectHome = useCallback(() => {
         navigate("/home");
-    }
+    }, [navigate]);
 
     useEffect(() => {
 
@@ -34,7 +34,7 @@ const ResetPassword = () => {
             redirectHome();
         }
 
-    }, []);
+    }, [redirectHome]);
 
     const showToast = async (msg) => {
         setProcessing(false);

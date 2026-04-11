@@ -22,7 +22,7 @@ const Topics = () => {
             navigate("/create");
         }
 
-    }, []);
+    }, [jsonData, navigate]);
 
     function redirectCreate() {
         navigate("/create");

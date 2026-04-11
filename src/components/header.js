@@ -33,7 +33,7 @@ const Header = ({ isHome }) => {
     } else {
       dashboardData();
     }
-  });
+  }, [isHome, navigate]);
 
   function redirectSignIn() {
     navigate("/signin");

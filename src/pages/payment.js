@@ -28,7 +28,7 @@ const Payment = () => {
             navigate("/pricing");
         }
 
-    }, []);
+    }, [navigate, plan]);
 
     async function startPaystack() {
         if (!email || !mName || !lastName || !post || !address || !country || !admin) {

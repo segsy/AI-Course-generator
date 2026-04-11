@@ -254,7 +254,7 @@ const Course = () => {
 
         }
 
-    }, []);
+    }, [jsonData, loadMessages, mainTopic, navigate, percentage, type]);
 
     const handleSelect = (topics, sub) => {
 

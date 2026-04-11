@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Navbar } from 'flowbite-react';
 import { useNavigate } from 'react-router-dom';
 import { serverURL } from '../../constants';
@@ -7,9 +7,9 @@ import axios from 'axios';
 const AdminHead = () => {
 
     const navigate = useNavigate();
-    function redirectHome() {
+    const redirectHome = useCallback(() => {
         navigate("/home");
-    }
+    }, [navigate]);
 
     useEffect(() => {
         async function dashboardData() {
@@ -27,7 +27,7 @@ const AdminHead = () => {
         } else {
             dashboardData();
         }
-    }, []);
+    }, [redirectHome]);
 
     return (
         <Navbar fluid className='py-5 dark:bg-black bg-white border-black dark:text-white dark:border-white md:border-b'>

@@ -28,7 +28,7 @@ const Manage = () => {
         } else {
             getDetails();
         }
-    }, []);
+    }, [navigate]);
 
     async function getDetails() {
         const dataToSend = {

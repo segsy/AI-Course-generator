@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Header from '../components/header';
 import Footers from '../components/footers';
 import { serverURL } from '../constants';
@@ -14,9 +14,9 @@ const Successful = () => {
 
     useEffect(() => {
         getDetails();
-    }, []);
+    }, [getDetails]);
 
-    async function getDetails() {
+    const getDetails = useCallback(async () => {
         const dataToSend = {
             uid: sessionStorage.getItem('uid')
         };
@@ -31,7 +31,7 @@ const Successful = () => {
         } catch (error) {
             //DO NOTHING
         }
-    }
+    }, []);
 
     async function sendUpdate() {
         const currentUrl = window.location.href;

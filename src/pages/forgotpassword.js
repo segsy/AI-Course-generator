@@ -49,7 +49,7 @@ const ForgotPassword = () => {
 
         return () => clearInterval(timer);
 
-    }, [isTimerRunning]);
+    }, [isTimerRunning, navigate]);
 
     const formattedTime = `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, '0')}`;
 

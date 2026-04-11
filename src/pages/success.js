@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Header from '../components/header';
 import Footers from '../components/footers';
 import { AiOutlineLoading } from 'react-icons/ai';
@@ -20,9 +20,9 @@ const Success = () => {
 
     useEffect(() => {
         getDetails();
-    }, []);
+    }, [getDetails]);
 
-    async function getDetails() {
+    const getDetails = useCallback(async () => {
         if (sessionStorage.getItem('method') === 'stripe') {
             const dataToSend = {
                 subscriberId: sessionStorage.getItem('stripe'),
@@ -87,7 +87,7 @@ const Success = () => {
             }
         }
 
-    }
+    }, []);
 
     async function download() {
         if (sessionStorage.getItem('method') === 'paypal') {
