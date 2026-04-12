@@ -7,6 +7,9 @@ import { Spinner } from 'flowbite-react';
 import SubscriptionDetails from '../components/subscriptionDetails';
 
 const Successful = () => {
+    const [jsonData, setJsonData] = useState(null);
+    const [method, setMethod] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     const getDetails = useCallback(async () => {
         const dataToSend = {
