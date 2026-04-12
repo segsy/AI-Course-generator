@@ -207,13 +207,13 @@ const Course = () => {
 
     }
 
-    async function storeLocal(messages) {
+    const storeLocal = useCallback(async (messages) => {
         try {
             sessionStorage.setItem(mainTopic, JSON.stringify(messages));
         } catch (error) {
             sessionStorage.setItem(mainTopic, JSON.stringify(messages));
         }
-    }
+    }, [mainTopic]);
 
     const defaultMessage = `<p>Hey there! I'm your AI teacher. If you have any questions about your ${mainTopic} course, whether it's about videos, images, or theory, just ask me. I'm here to clear your doubts.</p>`;
     const defaultPrompt = `I have a doubt about this topic :- ${mainTopic}. Please clarify my doubt in very short :- `;
