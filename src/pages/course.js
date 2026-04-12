@@ -231,7 +231,7 @@ const Course = () => {
         } catch (error) {
             loadMessages();
         }
-    }, [mainTopic, messages]);
+    }, [mainTopic, messages, defaultMessage, storeLocal]);
 
     useEffect(() => {
         loadMessages()
