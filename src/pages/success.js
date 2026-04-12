@@ -18,10 +18,6 @@ const Success = () => {
     const [jsonData, setJsonData] = useState({});
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        getDetails();
-    }, [getDetails]);
-
     const getDetails = useCallback(async () => {
         if (sessionStorage.getItem('method') === 'stripe') {
             const dataToSend = {
@@ -83,11 +79,15 @@ const Success = () => {
                     });
                 }
             } catch (error) {
-                getDetails()
+                console.error('Error fetching details:', error);
             }
         }
 
     }, []);
+
+    useEffect(() => {
+        getDetails();
+    }, [getDetails]);
 
     async function download() {
         if (sessionStorage.getItem('method') === 'paypal') {

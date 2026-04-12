@@ -1,5 +1,5 @@
 import { Drawer, Navbar, Sidebar } from 'flowbite-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import LogoComponent from '../components/LogoComponent';
 import { FiMenu, FiX } from 'react-icons/fi';
 import DarkModeToggle from '../components/DarkModeToggle';
@@ -206,6 +206,32 @@ const Course = () => {
         }
 
     }
+
+    async function storeLocal(messages) {
+        try {
+            sessionStorage.setItem(mainTopic, JSON.stringify(messages));
+        } catch (error) {
+            sessionStorage.setItem(mainTopic, JSON.stringify(messages));
+        }
+    }
+
+    const defaultMessage = `<p>Hey there! I'm your AI teacher. If you have any questions about your ${mainTopic} course, whether it's about videos, images, or theory, just ask me. I'm here to clear your doubts.</p>`;
+    const defaultPrompt = `I have a doubt about this topic :- ${mainTopic}. Please clarify my doubt in very short :- `;
+
+    const loadMessages = useCallback(async () => {
+        try {
+            const jsonValue = sessionStorage.getItem(mainTopic);
+            if (jsonValue !== null) {
+                setMessages(JSON.parse(jsonValue));
+            } else {
+                const newMessages = [...messages, { text: defaultMessage, sender: 'bot' }];
+                setMessages(newMessages);
+                await storeLocal(newMessages);
+            }
+        } catch (error) {
+            loadMessages();
+        }
+    }, [mainTopic, messages]);
 
     useEffect(() => {
         loadMessages()
@@ -458,24 +484,6 @@ const Course = () => {
         setkey(keys);
     };
 
-    const defaultMessage = `<p>Hey there! I'm your AI teacher. If you have any questions about your ${mainTopic} course, whether it's about videos, images, or theory, just ask me. I'm here to clear your doubts.</p>`;
-    const defaultPrompt = `I have a doubt about this topic :- ${mainTopic}. Please clarify my doubt in very short :- `;
-
-    const loadMessages = async () => {
-        try {
-            const jsonValue = sessionStorage.getItem(mainTopic);
-            if (jsonValue !== null) {
-                setMessages(JSON.parse(jsonValue));
-            } else {
-                const newMessages = [...messages, { text: defaultMessage, sender: 'bot' }];
-                setMessages(newMessages);
-                await storeLocal(newMessages);
-            }
-        } catch (error) {
-            loadMessages();
-        }
-    };
-
     const sendMessage = async () => {
         if (newMessage.trim() === '') return;
 
@@ -504,15 +512,6 @@ const Course = () => {
 
         }
     };
-
-    async function storeLocal(messages) {
-        try {
-            sessionStorage.setItem(mainTopic, JSON.stringify(messages));
-        } catch (error) {
-            sessionStorage.setItem(mainTopic, JSON.stringify(messages));
-        }
-    }
-
 
     const style = {
         "root": {

@@ -8,14 +8,6 @@ import SubscriptionDetails from '../components/subscriptionDetails';
 
 const Successful = () => {
 
-    const [jsonData, setJsonData] = useState({});
-    const [isLoading, setIsLoading] = useState(true);
-    const [method, setMethod] = useState('');
-
-    useEffect(() => {
-        getDetails();
-    }, [getDetails]);
-
     const getDetails = useCallback(async () => {
         const dataToSend = {
             uid: sessionStorage.getItem('uid')
@@ -32,6 +24,10 @@ const Successful = () => {
             //DO NOTHING
         }
     }, []);
+
+    useEffect(() => {
+        getDetails();
+    }, [getDetails]);
 
     async function sendUpdate() {
         const currentUrl = window.location.href;
