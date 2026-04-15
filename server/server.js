@@ -8,11 +8,12 @@ const crypto = require('crypto');
 require('dotenv').config();
 const gis = require('g-i-s');
 const youtubesearchapi = require("youtube-search-api");
-const { YoutubeTranscript } = require("youtube-transcript");
+// const { YoutubeTranscript } = require("youtube-transcript");
 const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
 const { createApi } = require('unsplash-js');
 const showdown = require('showdown');
 const axios = require('axios');
+require('dotenv').config({ path: './server/.env' });
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 //INITIALIZE
@@ -20,7 +21,17 @@ const app = express();
 app.use(cors());
 const PORT = process.env.PORT;
 app.use(bodyParser.json());
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Connect to MongoDB with error handling
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => {
+        console.log('Connected to MongoDB successfully');
+    })
+    .catch((error) => {
+        console.error('MongoDB connection error:', error);
+        process.exit(1); // Exit the process if DB connection fails
+    });
+
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
@@ -1353,7 +1364,7 @@ app.post('/api/dashboard', async (req, res) => {
     const users = await User.estimatedDocumentCount();
     const courses = await Course.estimatedDocumentCount();
     const admin = await Admin.findOne({ type: 'main' });
-    const total = admin.total;
+    const total = admin ? admin.total : 0;
     const monthlyPlanCount = await User.countDocuments({ type: process.env.MONTH_TYPE });
     const yearlyPlanCount = await User.countDocuments({ type: process.env.YEAR_TYPE });
     let monthCost = monthlyPlanCount * process.env.MONTH_COST;

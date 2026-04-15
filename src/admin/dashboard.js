@@ -19,11 +19,13 @@ const Dashboard = () => {
             const postURL = serverURL + `/api/dashboard`;
             const response = await axios.post(postURL);
             setData(response.data)
-            sessionStorage.setItem('terms', response.data.admin.terms)
-            sessionStorage.setItem('privacy', response.data.admin.privacy)
-            sessionStorage.setItem('cancel', response.data.admin.cancel)
-            sessionStorage.setItem('refund', response.data.admin.refund)
-            sessionStorage.setItem('billing', response.data.admin.billing)
+            if (response.data.admin) {
+                sessionStorage.setItem('terms', response.data.admin.terms)
+                sessionStorage.setItem('privacy', response.data.admin.privacy)
+                sessionStorage.setItem('cancel', response.data.admin.cancel)
+                sessionStorage.setItem('refund', response.data.admin.refund)
+                sessionStorage.setItem('billing', response.data.admin.billing)
+            }
         }
         dashboardData();
     }, []);

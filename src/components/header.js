@@ -21,9 +21,11 @@ const Header = ({ isHome }) => {
     async function dashboardData() {
       const postURL = serverURL + `/api/dashboard`;
       const response = await axios.post(postURL);
-      sessionStorage.setItem('adminEmail', response.data.admin.email);
-      if (response.data.admin.email === sessionStorage.getItem('email')) {
-        setAdmin(true)
+      if (response.data.admin) {
+        sessionStorage.setItem('adminEmail', response.data.admin.email);
+        if (response.data.admin.email === sessionStorage.getItem('email')) {
+          setAdmin(true)
+        }
       }
     }
     if (sessionStorage.getItem('adminEmail')) {

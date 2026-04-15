@@ -15,9 +15,11 @@ const AdminHead = () => {
         async function dashboardData() {
             const postURL = serverURL + `/api/dashboard`;
             const response = await axios.post(postURL);
-            sessionStorage.setItem('adminEmail', response.data.admin.email);
-            if (response.data.admin.email !== sessionStorage.getItem('email')) {
-                redirectHome();
+            if (response.data.admin) {
+                sessionStorage.setItem('adminEmail', response.data.admin.email);
+                if (response.data.admin.email !== sessionStorage.getItem('email')) {
+                    redirectHome();
+                }
             }
         }
         if (sessionStorage.getItem('adminEmail')) {
