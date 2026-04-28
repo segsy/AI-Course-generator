@@ -13,13 +13,17 @@ const AdminHead = () => {
 
     useEffect(() => {
         async function dashboardData() {
-            const postURL = serverURL + `/api/dashboard`;
-            const response = await axios.post(postURL);
-            if (response.data.admin) {
-                sessionStorage.setItem('adminEmail', response.data.admin.email);
-                if (response.data.admin.email !== sessionStorage.getItem('email')) {
-                    redirectHome();
+            try {
+                const postURL = serverURL + `/api/dashboard`;
+                const response = await axios.post(postURL);
+                if (response.data.admin) {
+                    sessionStorage.setItem('adminEmail', response.data.admin.email);
+                    if (response.data.admin.email !== sessionStorage.getItem('email')) {
+                        redirectHome();
+                    }
                 }
+            } catch (error) {
+                console.error('Dashboard data fetch failed:', error.message);
             }
         }
         if (sessionStorage.getItem('adminEmail')) {

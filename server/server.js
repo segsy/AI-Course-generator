@@ -29,8 +29,14 @@ mongoose.connect(process.env.MONGODB_URI)
     })
     .catch((error) => {
         console.error('MongoDB connection error:', error);
-        process.exit(1); // Exit the process if DB connection fails
+        // Continue running even if DB connection fails
+        // Database operations will be handled gracefully in each endpoint
     });
+
+// Helper to check if MongoDB is connected
+const isDbConnected = () => {
+    return mongoose.connection.readyState === 1;
+};
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -1361,64 +1367,96 @@ app.post('/api/contact', async (req, res) => {
 
 //DASHBOARD
 app.post('/api/dashboard', async (req, res) => {
-    const users = await User.estimatedDocumentCount();
-    const courses = await Course.estimatedDocumentCount();
-    const admin = await Admin.findOne({ type: 'main' });
-    const total = admin ? admin.total : 0;
-    const monthlyPlanCount = await User.countDocuments({ type: process.env.MONTH_TYPE });
-    const yearlyPlanCount = await User.countDocuments({ type: process.env.YEAR_TYPE });
-    let monthCost = monthlyPlanCount * process.env.MONTH_COST;
-    let yearCost = yearlyPlanCount * process.env.YEAR_COST;
-    let sum = monthCost + yearCost;
-    let paid = yearlyPlanCount + monthlyPlanCount;
-    const videoType = await Course.countDocuments({ type: 'video & text course' });
-    const textType = await Course.countDocuments({ type: 'theory & image course' });
-    let free = users - paid;
-    res.json({ users: users, courses: courses, total: total, sum: sum, paid: paid, videoType: videoType, textType: textType, free: free, admin: admin });
+    try {
+        if (!isDbConnected()) {
+            return res.json({ users: 0, courses: 0, total: 0, sum: 0, paid: 0, videoType: 0, textType: 0, free: 0, admin: null });
+        }
+        const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms));
+        const results = await Promise.allSettled([
+            Promise.race([User.estimatedDocumentCount(), timeout(3000)]),
+            Promise.race([Course.estimatedDocumentCount(), timeout(3000)]),
+            Promise.race([Admin.findOne({ type: 'main' }), timeout(3000)]),
+            Promise.race([User.countDocuments({ type: process.env.MONTH_TYPE }), timeout(3000)]),
+            Promise.race([User.countDocuments({ type: process.env.YEAR_TYPE }), timeout(3000)]),
+            Promise.race([Course.countDocuments({ type: 'video & text course' }), timeout(3000)]),
+            Promise.race([Course.countDocuments({ type: 'theory & image course' }), timeout(3000)])
+        ]);
+        const users = results[0].status === 'fulfilled' ? results[0].value : 0;
+        const courses = results[1].status === 'fulfilled' ? results[1].value : 0;
+        const admin = results[2].status === 'fulfilled' ? results[2].value : null;
+        const monthlyPlanCount = results[3].status === 'fulfilled' ? results[3].value : 0;
+        const yearlyPlanCount = results[4].status === 'fulfilled' ? results[4].value : 0;
+        const videoType = results[5].status === 'fulfilled' ? results[5].value : 0;
+        const textType = results[6].status === 'fulfilled' ? results[6].value : 0;
+        const total = admin ? admin.total : 0;
+        let monthCost = monthlyPlanCount * (process.env.MONTH_COST || 0);
+        let yearCost = yearlyPlanCount * (process.env.YEAR_COST || 0);
+        let sum = monthCost + yearCost;
+        let paid = yearlyPlanCount + monthlyPlanCount;
+        let free = Math.max(0, users - paid);
+        res.json({ users: users, courses: courses, total: total, sum: sum, paid: paid, videoType: videoType, textType: textType, free: free, admin: admin });
+    } catch (error) {
+        res.json({ users: 0, courses: 0, total: 0, sum: 0, paid: 0, videoType: 0, textType: 0, free: 0, admin: null });
+    }
 });
 
 //GET USERS
 app.get('/api/getusers', async (req, res) => {
     try {
+        if (!isDbConnected()) {
+            return res.json([]);
+        }
         const users = await User.find({});
         res.json(users);
     } catch (error) {
-        //DO NOTHING
+        res.json([]);
     }
 });
 
 //GET COURES
 app.get('/api/getcourses', async (req, res) => {
     try {
+        if (!isDbConnected()) {
+            return res.json([]);
+        }
         const courses = await Course.find({});
         res.json(courses);
     } catch (error) {
-        //DO NOTHING
+        res.json([]);
     }
 });
 
 //GET PAID USERS
 app.get('/api/getpaid', async (req, res) => {
     try {
+        if (!isDbConnected()) {
+            return res.json([]);
+        }
         const paidUsers = await User.find({ type: { $ne: 'free' } });
         res.json(paidUsers);
     } catch (error) {
-        //DO NOTHING
+        res.json([]);
     }
 });
 
 //GET ADMINS
 app.get('/api/getadmins', async (req, res) => {
     try {
+        if (!isDbConnected()) {
+            return res.json({ users: [], admins: [] });
+        }
         const users = await User.find({ email: { $nin: await getEmailsOfAdmins() } });
         const admins = await Admin.find({});
         res.json({ users: users, admins: admins });
     } catch (error) {
-        //DO NOTHING
+        res.json({ users: [], admins: [] });
     }
 });
 
 async function getEmailsOfAdmins() {
+    if (!isDbConnected()) {
+        return [];
+    }
     const admins = await Admin.find({});
     return admins.map(admin => admin.email);
 }
@@ -1427,12 +1465,15 @@ async function getEmailsOfAdmins() {
 app.post('/api/addadmin', async (req, res) => {
     const { email } = req.body;
     try {
+        if (!isDbConnected()) {
+            return res.json({ success: false, message: 'Database unavailable' });
+        }
         const user = await User.findOne({ email: email });
         const newAdmin = new Admin({ email: user.email, mName: user.mName, type: 'no' });
         await newAdmin.save();
         res.json({ success: true, message: 'Admin added successfully' });
     } catch (error) {
-        //DO NOTHING
+        res.json({ success: false, message: 'Database unavailable' });
     }
 });
 
@@ -1440,20 +1481,26 @@ app.post('/api/addadmin', async (req, res) => {
 app.post('/api/removeadmin', async (req, res) => {
     const { email } = req.body;
     try {
+        if (!isDbConnected()) {
+            return res.json({ success: false, message: 'Database unavailable' });
+        }
         await Admin.findOneAndDelete({ email: email });
         res.json({ success: true, message: 'Admin removed successfully' });
     } catch (error) {
-        //DO NOTHING
+        res.json({ success: false, message: 'Database unavailable' });
     }
 });
 
 //GET CONTACTS
 app.get('/api/getcontact', async (req, res) => {
     try {
+        if (!isDbConnected()) {
+            return res.json([]);
+        }
         const contacts = await Contact.find({});
         res.json(contacts);
     } catch (error) {
-        //DO NOTHING
+        res.json([]);
     }
 });
 
@@ -1461,6 +1508,9 @@ app.get('/api/getcontact', async (req, res) => {
 app.post('/api/saveadmin', async (req, res) => {
     const { data, type } = req.body;
     try {
+        if (!isDbConnected()) {
+            return res.json({ success: false, message: 'Database unavailable' });
+        }
         if (type === 'terms') {
             await Admin.findOneAndUpdate(
                 { type: 'main' },
@@ -1498,17 +1548,20 @@ app.post('/api/saveadmin', async (req, res) => {
             });
         }
     } catch (error) {
-        //DO NOTHING
+        res.json({ success: false, message: 'Database unavailable' });
     }
 });
 
 //GET POLICIES
 app.get('/api/policies', async (req, res) => {
     try {
+        if (!isDbConnected()) {
+            return res.json([]);
+        }
         const admins = await Admin.find({});
         res.json(admins);
     } catch (error) {
-        //DO NOTHING
+        res.json([]);
     }
 });
 
@@ -1547,34 +1600,37 @@ app.post('/api/stripedetails', async (req, res) => {
     }
     cost = cost / 4;
 
-    await Admin.findOneAndUpdate(
-        { type: 'main' },
-        { $inc: { total: cost } }
-    );
+    if (isDbConnected()) {
+        await Admin.findOneAndUpdate(
+            { type: 'main' },
+            { $inc: { total: cost } }
+        );
 
-    await User.findOneAndUpdate(
-        { _id: uid },
-        { $set: { type: plan } }
-    ).then(async result => {
+        await User.findOneAndUpdate(
+            { _id: uid },
+            { $set: { type: plan } }
+        ).then(async result => {
+            const session = await stripe.checkout.sessions.retrieve(subscriberId);
+            res.send(session);
+        }).catch(error => {
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        })
+    } else {
         const session = await stripe.checkout.sessions.retrieve(subscriberId);
         res.send(session);
-    }).catch(error => {
-        res.status(500).json({ success: false, message: 'Internal server error' });
-    })
+    }
 
 });
 
 app.post('/api/stripecancel', async (req, res) => {
     const { id } = req.body;
 
-
-    const subscription = await stripe.subscriptions.cancel(
-        id
-    );
+    const subscription = await stripe.subscriptions.cancel(id);
 
     try {
-        const subscriptionDetails = await Subscription.findOne({ subscriberId: id });
-        const userId = subscriptionDetails.user;
+        if (isDbConnected()) {
+            const subscriptionDetails = await Subscription.findOne({ subscriberId: id });
+            const userId = subscriptionDetails.user;
 
         await User.findOneAndUpdate(
             { _id: userId },
@@ -1640,7 +1696,7 @@ app.post('/api/stripecancel', async (req, res) => {
 
         await transporter.sendMail(mailOptions);
         res.json({ success: true, message: '' });
-
+        }
     } catch (error) {
         //DO NOTHING
     }

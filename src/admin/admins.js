@@ -17,10 +17,16 @@ const Admins = () => {
     useEffect(() => {
         sessionStorage.setItem('darkMode', false);
         async function dashboardData() {
-            const postURL = serverURL + `/api/getadmins`;
-            const response = await axios.get(postURL);
-            setAdmin(response.data.admins)
-            setUser(response.data.users)
+            try {
+                const postURL = serverURL + `/api/getadmins`;
+                const response = await axios.get(postURL);
+                setAdmin(response.data.admins)
+                setUser(response.data.users)
+            } catch (error) {
+                console.error('Admins data fetch failed:', error.message);
+                setAdmin([]);
+                setUser([]);
+            }
         }
         dashboardData();
     }, []);

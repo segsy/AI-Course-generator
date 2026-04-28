@@ -16,15 +16,20 @@ const Dashboard = () => {
     useEffect(() => {
         sessionStorage.setItem('darkMode', false);
         async function dashboardData() {
-            const postURL = serverURL + `/api/dashboard`;
-            const response = await axios.post(postURL);
-            setData(response.data)
-            if (response.data.admin) {
-                sessionStorage.setItem('terms', response.data.admin.terms)
-                sessionStorage.setItem('privacy', response.data.admin.privacy)
-                sessionStorage.setItem('cancel', response.data.admin.cancel)
-                sessionStorage.setItem('refund', response.data.admin.refund)
-                sessionStorage.setItem('billing', response.data.admin.billing)
+            try {
+                const postURL = serverURL + `/api/dashboard`;
+                const response = await axios.post(postURL);
+                setData(response.data)
+                if (response.data.admin) {
+                    sessionStorage.setItem('terms', response.data.admin.terms)
+                    sessionStorage.setItem('privacy', response.data.admin.privacy)
+                    sessionStorage.setItem('cancel', response.data.admin.cancel)
+                    sessionStorage.setItem('refund', response.data.admin.refund)
+                    sessionStorage.setItem('billing', response.data.admin.billing)
+                }
+            } catch (error) {
+                console.error('Dashboard data fetch failed:', error.message);
+                setData({ users: 0, courses: 0, total: 0, sum: 0, paid: 0, videoType: 0, textType: 0, free: 0, admin: null });
             }
         }
         dashboardData();

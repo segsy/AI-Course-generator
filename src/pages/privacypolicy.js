@@ -11,9 +11,14 @@ const PrivacyPolicy = () => {
 
     useEffect(() => {
         async function dashboardData() {
-            const postURL = serverURL + `/api/policies`;
-            const response = await axios.get(postURL);
-            setData(response.data[0].privacy)
+            try {
+                const postURL = serverURL + `/api/policies`;
+                const response = await axios.get(postURL);
+                setData(response.data[0].privacy)
+            } catch (error) {
+                console.error('Policies data fetch failed:', error.message);
+                setData('');
+            }
         }
         if (sessionStorage.getItem('TermsPolicy') === null && sessionStorage.getItem('PrivacyPolicy') === null) {
             dashboardData();

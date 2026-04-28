@@ -16,9 +16,14 @@ const Contacts = () => {
     useEffect(() => {
         sessionStorage.setItem('darkMode', false);
         async function dashboardData() {
-            const postURL = serverURL + `/api/getcontact`;
-            const response = await axios.get(postURL);
-            setData(response.data)
+            try {
+                const postURL = serverURL + `/api/getcontact`;
+                const response = await axios.get(postURL);
+                setData(response.data)
+            } catch (error) {
+                console.error('Contacts data fetch failed:', error.message);
+                setData([]);
+            }
         }
         dashboardData();
     }, []);

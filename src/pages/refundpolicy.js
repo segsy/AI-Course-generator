@@ -11,9 +11,14 @@ const RefundPolicy = () => {
 
     useEffect(() => {
         async function dashboardData() {
-            const postURL = serverURL + `/api/policies`;
-            const response = await axios.get(postURL);
-            setData(response.data[0])
+            try {
+                const postURL = serverURL + `/api/policies`;
+                const response = await axios.get(postURL);
+                setData(response.data[0])
+            } catch (error) {
+                console.error('Policies data fetch failed:', error.message);
+                setData({});
+            }
         }
         dashboardData();
     }, []);

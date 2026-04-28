@@ -16,9 +16,14 @@ const Users = () => {
     useEffect(() => {
         sessionStorage.setItem('darkMode', false);
         async function dashboardData() {
-            const postURL = serverURL + `/api/getusers`;
-            const response = await axios.get(postURL);
-            setData(response.data)
+            try {
+                const postURL = serverURL + `/api/getusers`;
+                const response = await axios.get(postURL);
+                setData(response.data)
+            } catch (error) {
+                console.error('Users data fetch failed:', error.message);
+                setData([]);
+            }
         }
         dashboardData();
     }, []);

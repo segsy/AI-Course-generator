@@ -15,10 +15,11 @@ const Header = ({ isHome }) => {
   const [admin, setAdmin] = useState(false);
 
   useEffect(() => {
-    if (isHome && sessionStorage.getItem('uid') === null) {
-      navigate("/signin");
-    }
-    async function dashboardData() {
+  if (isHome && sessionStorage.getItem('uid') === null) {
+    navigate("/signin");
+  }
+  async function dashboardData() {
+    try {
       const postURL = serverURL + `/api/dashboard`;
       const response = await axios.post(postURL);
       if (response.data.admin) {
@@ -27,15 +28,18 @@ const Header = ({ isHome }) => {
           setAdmin(true)
         }
       }
+    } catch (error) {
+      console.error('Dashboard data fetch failed:', error.message);
     }
-    if (sessionStorage.getItem('adminEmail')) {
-      if (sessionStorage.getItem('adminEmail') === sessionStorage.getItem('email')) {
-        setAdmin(true)
-      }
-    } else {
-      dashboardData();
+  }
+  if (sessionStorage.getItem('adminEmail')) {
+    if (sessionStorage.getItem('adminEmail') === sessionStorage.getItem('email')) {
+      setAdmin(true)
     }
-  }, [isHome, navigate]);
+  } else {
+    dashboardData();
+  }
+}, [isHome, navigate]);
 
   function redirectSignIn() {
     navigate("/signin");

@@ -16,9 +16,14 @@ const PaidUsers = () => {
     useEffect(() => {
         sessionStorage.setItem('darkMode', false);
         async function dashboardData() {
-            const postURL = serverURL + `/api/getpaid`;
-            const response = await axios.get(postURL);
-            setData(response.data)
+            try {
+                const postURL = serverURL + `/api/getpaid`;
+                const response = await axios.get(postURL);
+                setData(response.data)
+            } catch (error) {
+                console.error('Paid users data fetch failed:', error.message);
+                setData([]);
+            }
         }
         dashboardData();
     }, []);
