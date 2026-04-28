@@ -1,5 +1,6 @@
 import './App.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import Landing from './pages/landing';
 import SignIn from './pages/signin';
 import SignUp from './pages/signup';
@@ -42,6 +43,16 @@ import Error from './pages/error';
 import Pending from './pages/pending';
 
 function App() {
+  const SentryTest = () => (
+    <>
+      <button onClick={() => { throw new Error("Sentry React test error"); }}>
+        Test Error
+      </button>
+      <button onClick={() => Sentry.captureMessage("Sentry test message", "info")}>
+        Test Message
+      </button>
+    </>
+  );
 
   return (
     <Router>
@@ -61,6 +72,7 @@ function App() {
           pauseOnHover
           theme={sessionStorage.getItem('darkMode') === 'true' ? 'dark' : 'light'}
         />
+        <SentryTest />
         <Routes>
           {/* Main App */}
           <Route path="/" exact element={<Landing />} />
