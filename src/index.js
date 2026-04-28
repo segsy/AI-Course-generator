@@ -1,4 +1,4 @@
-import './instrument'; // MUST be first
+import './instrument.js'; // MUST be first
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';

@@ -14,7 +14,7 @@ Sentry.init({
 
   sendDefaultPii: true,
 
-    integrations: [
+  integrations: [
     // Router integration for React Router v6
     Sentry.reactRouterV6BrowserTracingIntegration({
       useEffect: React.useEffect,
